@@ -513,6 +513,8 @@ define(
 
                     clearTimeout(this.hideTimeout);
 
+                    helper.removeDOMEvent(window, 'resize');
+
                     helper.addDOMEvent(
                         window,
                         'resize',

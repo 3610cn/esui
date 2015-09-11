@@ -199,6 +199,7 @@ define(
                  *    {number} delayTime 延迟展示时间
                  *    {Object=} positionOpt 层布局参数
                  *    {Object=} targetPositionOpt 参照物对象的层布局参数
+                 * @return {Object}
                  */
                 attachTo: function (options) {
                     // 根据参数获取行为处理器
@@ -223,6 +224,8 @@ define(
                         case 'manual':
                             break;
                     }
+
+                    return handler;
                 },
 
                 /**
@@ -513,6 +516,7 @@ define(
 
                     clearTimeout(this.hideTimeout);
 
+                    // 为了避免重复监听'resize'事件 因此每次添加之前都先remove掉
                     helper.removeDOMEvent(window, 'resize');
 
                     helper.addDOMEvent(

@@ -79,11 +79,9 @@ define(
                 activate: function () {
                     this.$super(arguments);
                     var target = this.target;
-                    var showMode = target.showMode || 'over';
-                    var delayTime = +target.delayTime || 0;
-                    var tipNodes = $(this.target.main).find('[data-role="tip"]');
+                    var containerElement = $(this.target.main);
 
-                    if (!tipNodes.length) {
+                    if (!containerElement.length) {
                         return;
                     }
 
@@ -91,31 +89,32 @@ define(
                         title: '这是提示标题',
                         content: '这是提示内容'
                     });
+                    tipLayer.showMode = target.showMode || 'over';
+                    tipLayer.delayTime = +target.delayTime || tipLayer.delayTime;
 
                     this.tipLayer = tipLayer;
 
-                    // 将TipLayer控件attach到每一个需要添加tip的节点上
-                    u.each(tipNodes, function (node) {
-                        tipLayer.attachTo({
-                            targetDOM: $(node),
-                            showMode: showMode,
-                            delayTime: delayTime,
-                            positionOpt: {top: 'top', right: 'left'}
-                        });
-                    });
+                    if (tipLayer.showMode === 'over') {
+                        tipLayer.helper.addDOMEvent(containerElement,
+                            'mouseover', '[data-role="tip"]', u.bind(showTip, tipLayer));
+                    }
+                    else if (tipLayer.showMode === 'click') {
+                        tipLayer.helper.addDOMEvent(containerElement,
+                            'mouseup', '[data-role="tip"]', u.bind(showTip, tipLayer));
+                    }
 
                     // 为防止delayTime时出现 tip还未hide就更改内容的情况 监听beforeshow事件 在此刻再进行更改
                     tipLayer.on('beforeshow', function (e) {
                         var title = e.title;
                         var content = e.content;
                         var event = target.fire('tipbeforeshow', {
-                            tipLayer: this,
+                            tipLayer: tipLayer,
                             title: title,
                             content: content
                         });
                         if (!event.isDefaultPrevented()) {
-                            this.setTitle(title);
-                            this.setContent(content);
+                            tipLayer.setTitle(title);
+                            tipLayer.setContent(content);
                         }
                     }, this);
                 },
@@ -132,6 +131,26 @@ define(
                 }
             }
         );
+
+        function showTip(event) {
+            var targetDOM = $(event.target);
+            // 检查是否具有data-attached的属性 有的话直接忽略就可以
+            if (!targetDOM.data('data-attached')) {
+                var handler = this.attachTo({
+                    targetDOM: targetDOM,
+                    showMode: this.showMode,
+                    delayTime: this.delayTime,
+                    positionOpt: {top: 'top', right: 'left'}
+                });
+                // 凡是已经attachTo过之后的节点 都自动添加一个data-attached的属性 防止重复绑定
+                targetDOM.data('data-attached', true);
+
+                // 第一次绑定的时候需要手动show一下才可以显示tip
+                handler.layer.show();
+            }
+            // 阻止冒泡到父节点 以防止tipLayer自动hide掉
+            event.stopPropagation();
+        }
 
         esui.registerExtension(AutoTipLayer);
         return AutoTipLayer;

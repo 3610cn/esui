@@ -26,6 +26,15 @@ define(
          * 1. data-role='tip' 所有具有该属性的节点都会增加tip提示
          * 2. data-tip-title='提示标题' 该节点所要显示的提示的标题内容
          * 3. data-tip-content='提示内容' 该节点所要显示的提示的内容
+         * 另外，可以配置以下属性对tip的位置进行控制
+         * 1. data-tip-tipTop='top' 可以为'top'或者'bottom' 默认为'top'
+         *    同TipLayer控件中的positionOpt.top
+         * 2. data-tip-tipRight='left' 可以为'left'或者'right' 默认为'left'
+         *    同TipLayer控件中的positionOpt.right
+         * 3. data-tip-selfTop='top' 可以为'top'或者'bottom' 默认为'top'
+         *    同TipLayer控件中的targetPositionOpt.top
+         * 4. data-tip-selfRight='right' 可以为'left'或者'right' 默认为'left'
+         *    同TipLayer控件中的targetPositionOpt.right
          * 一旦配置过以上属性 就可以自动为该区域内所有类似的节点添加相应的tip
          *
          * 默认会根据节点的attribute设置tip的title和content
@@ -105,8 +114,9 @@ define(
 
                     // 为防止delayTime时出现 tip还未hide就更改内容的情况 监听beforeshow事件 在此刻再进行更改
                     tipLayer.on('beforeshow', function (e) {
-                        var title = e.title;
-                        var content = e.content;
+                        var targetElement = $(e.targetElement);
+                        var title = targetElement.attr('data-tip-title') || tipLayer.title;
+                        var content = targetElement.attr('data-tip-content') || tipLayer.content;
                         var event = target.fire('tipbeforeshow', {
                             tipLayer: tipLayer,
                             title: title,
@@ -116,7 +126,7 @@ define(
                             tipLayer.setTitle(title);
                             tipLayer.setContent(content);
                         }
-                    }, this);
+                    });
                 },
 
                 /**
@@ -140,7 +150,14 @@ define(
                     targetDOM: targetDOM,
                     showMode: this.showMode,
                     delayTime: this.delayTime,
-                    positionOpt: {top: 'top', right: 'left'}
+                    positionOpt: {
+                        top: targetDOM.attr('data-tip-tipTop') || 'top',
+                        right: targetDOM.attr('data-tip-tipRight') || 'left'
+                    },
+                    targetPositionOpt: {
+                        top: targetDOM.attr('data-tip-selfTop') || 'top',
+                        right: targetDOM.attr('data-tip-selfRight') || 'right'
+                    }
                 });
                 // 凡是已经attachTo过之后的节点 都自动添加一个data-attached的属性 防止重复绑定
                 targetDOM.data('data-attached', true);

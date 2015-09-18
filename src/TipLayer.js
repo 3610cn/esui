@@ -528,10 +528,7 @@ define(
                     // 动态计算layer的zIndex
                     this.main.style.zIndex = Layer.getZIndex(targetElement);
 
-                    this.fire('beforeshow', {
-                        title: $(targetElement).attr('data-tip-title') || this.title,
-                        content: $(targetElement).attr('data-tip-content') || this.content
-                    });
+                    this.fire('beforeshow', {targetElement: targetElement});
 
                     this.removeState('hidden');
 
